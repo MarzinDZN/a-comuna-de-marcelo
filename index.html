@@ -922,13 +922,23 @@
 
     const lines = p.corpo.split('\n');
     let html = '';
+
+    function renderInline(text) {
+      // Remove itálico simples *texto* — substitui pelo texto sem asteriscos
+      text = text.replace(/\*\*\*(.*?)\*\*\*/g, '<strong>$1</strong>');
+      text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      text = text.replace(/\*(.*?)\*/g, '$1');
+      text = text.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank">$1</a>');
+      return text;
+    }
+
     lines.forEach(line => {
       const trimmed = line.trim();
       if (!trimmed) return;
-      if (trimmed.startsWith('**') && trimmed.endsWith('**')) {
+      if (/^\*\*[^*]+\*\*$/.test(trimmed)) {
         html += `<strong>${trimmed.slice(2,-2)}</strong>`;
       } else {
-        html += `<p>${trimmed}</p>`;
+        html += `<p>${renderInline(trimmed)}</p>`;
       }
     });
     bodyEl.innerHTML = html;
