@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>A Comuna de Marcelo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream: #f5f0e8;
+      --parchment: #ede5d0;
+      --red: #9b1a1a;
+      --red-dark: #6b0f0f;
+      --red-light: #c0392b;
+      --ink: #1a1a1a;
+      --ink-light: #3a3a3a;
+      --rule: #c8b89a;
+      --rule-dark: #9b1a1a;
+      --muted: #7a6e5f;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background-color: var(--cream);
+      color: var(--ink);
+      font-family: 'IM Fell English', Georgia, serif;
+      min-height: 100vh;
+    }
+
+    /* ─── NOISE TEXTURE OVERLAY ─── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.5;
+    }
+
+    /* ─── HEADER ─── */
+    header {
+      background-color: var(--cream);
+      padding: 0;
+      position: relative;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 40px 8px;
+      border-bottom: 1px solid var(--rule);
+      font-family: 'Special Elite', monospace;
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    .header-date { text-transform: uppercase; }
+
+    .header-tagline {
+      font-style: italic;
+      color: var(--red);
+      letter-spacing: 0.04em;
+    }
+
+    .header-main {
+      text-align: center;
+      padding: 28px 40px 16px;
+      position: relative;
+    }
+
+    .header-eyebrow {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      color: var(--red);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .site-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(3rem, 8vw, 6.5rem);
+      font-weight: 900;
+      line-height: 0.9;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+    }
+
+    .site-title span {
+      color: var(--red);
+    }
+
+    .site-subtitle {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-top: 10px;
+    }
+
+    .header-rules {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin: 14px 40px 0;
+    }
+    .rule-thick { height: 4px; background: var(--ink); }
+    .rule-thin  { height: 1px; background: var(--ink); }
+
+    /* ─── NAV ─── */
+    nav {
+      background: var(--ink);
+      display: flex;
+      justify-content: center;
+      gap: 0;
+    }
+
+    nav a {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--cream);
+      text-decoration: none;
+      padding: 9px 22px;
+      border-right: 1px solid #333;
+      transition: background 0.2s, color 0.2s;
+    }
+    nav a:first-child { border-left: 1px solid #333; }
+    nav a:hover {
+      background: var(--red);
+      color: var(--cream);
+    }
+
+    /* ─── TICKER / MANCHETES ─── */
+    .ticker-wrap {
+      background: var(--red-dark);
+      padding: 0 40px;
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .ticker-inner {
+      display: flex;
+      align-items: center;
+      height: 44px;
+    }
+
+    .ticker-label {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--cream);
+      background: var(--red);
+      padding: 4px 10px;
+      margin-right: 20px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .ticker-slides {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      height: 100%;
+    }
+
+    .ticker-slide {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: flex;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+      pointer-events: none;
+    }
+
+    .ticker-slide.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .ticker-slide a {
+      font-family: 'IM Fell English', Georgia, serif;
+      font-size: 0.95rem;
+      font-style: italic;
+      color: var(--cream);
+      text-decoration: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .ticker-slide a:hover { text-decoration: underline; }
+
+    .ticker-slide .ticker-date {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.6rem;
+      color: rgba(245,240,232,0.6);
+      margin-left: 16px;
+      white-space: nowrap;
+    }
+
+    .ticker-dots {
+      display: flex;
+      gap: 5px;
+      margin-left: 16px;
+      flex-shrink: 0;
+    }
+    .ticker-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: rgba(245,240,232,0.3);
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .ticker-dot.active { background: var(--cream); }
+
+    /* ─── MAIN LAYOUT ─── */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 40px 60px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ─── SECTION HEADERS ─── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 40px 0 24px;
+    }
+
+    .section-label {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--cream);
+      background: var(--red-dark);
+      padding: 4px 12px;
+      white-space: nowrap;
+    }
+
+    .section-rule {
+      flex: 1;
+      height: 1px;
+      background: var(--rule-dark);
+    }
+
+    /* ─── ARTICLES GRID ─── */
+    .articles-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+
+    .article-row {
+      display: grid;
+      grid-template-columns: 80px 1fr auto;
+      align-items: start;
+      gap: 20px;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--rule);
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.15s;
+    }
+
+    .article-row:first-child { border-top: 1px solid var(--rule); }
+
+    .article-row:hover { background: rgba(155,26,26,0.04); }
+    .article-row:hover .article-num { color: var(--red); }
+
+    .article-num {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 3.5rem;
+      font-weight: 900;
+      color: var(--parchment);
+      line-height: 1;
+      text-align: right;
+      padding-right: 4px;
+      transition: color 0.2s;
+      border-right: 2px solid var(--rule);
+      user-select: none;
+    }
+
+    .article-body { padding-left: 4px; }
+
+    .article-date {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 6px;
+    }
+
+    .article-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      line-height: 1.3;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+
+    .article-resumo {
+      font-family: 'IM Fell English', Georgia, serif;
+      font-size: 0.9rem;
+      font-style: italic;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .article-arrow {
+      font-size: 1.4rem;
+      color: var(--rule);
+      align-self: center;
+      transition: color 0.2s, transform 0.2s;
+    }
+
+    .article-row:hover .article-arrow {
+      color: var(--red);
+      transform: translateX(4px);
+    }
+
+    /* ─── SOBRE ─── */
+    .sobre-block {
+      background: var(--ink);
+      color: var(--cream);
+      padding: 40px 48px;
+      margin-top: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sobre-block::before {
+      content: '★';
+      position: absolute;
+      right: -20px;
+      top: -30px;
+      font-size: 12rem;
+      color: var(--red-dark);
+      opacity: 0.15;
+      line-height: 1;
+      user-select: none;
+    }
+
+    .sobre-eyebrow {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--red-light);
+      margin-bottom: 12px;
+    }
+
+    .sobre-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 2rem;
+      font-weight: 900;
+      margin-bottom: 16px;
+      line-height: 1.2;
+    }
+
+    .sobre-text {
+      font-family: 'IM Fell English', Georgia, serif;
+      font-size: 1rem;
+      line-height: 1.8;
+      color: rgba(245,240,232,0.85);
+      max-width: 700px;
+    }
+
+    .sobre-manifesto {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      color: var(--red-light);
+      margin-top: 20px;
+      border-top: 1px solid #333;
+      padding-top: 16px;
+      font-style: italic;
+    }
+
+    /* ─── QUEM SOU EU ─── */
+    .quem-block {
+      padding: 40px 0 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+    }
+
+    .quem-left { border-right: 1px solid var(--rule); padding-right: 48px; }
+
+    .quem-name {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 2.2rem;
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+
+    .quem-idade {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      color: var(--red);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .quem-text {
+      font-family: 'IM Fell English', Georgia, serif;
+      font-size: 0.95rem;
+      line-height: 1.8;
+      color: var(--ink-light);
+    }
+
+    .quem-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 20px;
+    }
+
+    .quem-tag {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border: 1px solid var(--red);
+      color: var(--red);
+      padding: 3px 8px;
+    }
+
+    .quem-right {}
+
+    .quem-section-title {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+      margin-top: 24px;
+    }
+
+    .quem-section-title:first-child { margin-top: 0; }
+
+    .quem-section-content {
+      font-family: 'IM Fell English', Georgia, serif;
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: var(--ink-light);
+      font-style: italic;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: var(--ink);
+      color: var(--cream);
+      text-align: center;
+      padding: 28px 40px;
+      margin-top: 60px;
+    }
+
+    .footer-rules {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin-bottom: 20px;
+    }
+    .footer-rule-thick { height: 3px; background: var(--red); }
+    .footer-rule-thin  { height: 1px; background: var(--red-dark); }
+
+    .footer-contact {
+      font-family: 'IM Fell English', Georgia, serif;
+      font-size: 0.9rem;
+      font-style: italic;
+      color: rgba(245,240,232,0.8);
+      margin-bottom: 10px;
+    }
+
+    .footer-contact a {
+      color: var(--red-light);
+      text-decoration: none;
+    }
+
+    .footer-contact a:hover { text-decoration: underline; }
+
+    .footer-credit {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.55rem;
+      letter-spacing: 0.15em;
+      color: rgba(245,240,232,0.3);
+      text-transform: uppercase;
+    }
+
+    .footer-slogan {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 0.85rem;
+      font-style: italic;
+      color: var(--red-light);
+      margin-bottom: 14px;
+    }
+
+    /* ─── ARTICLE PAGE ─── */
+    .article-page { display: none; }
+
+    .article-page.visible { display: block; }
+
+    .front-page.hidden { display: none; }
+
+    .article-full-header {
+      padding: 40px 0 28px;
+      border-bottom: 3px solid var(--ink);
+      margin-bottom: 36px;
+    }
+
+    .back-link {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--red);
+      text-decoration: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 24px;
+      transition: gap 0.2s;
+    }
+    .back-link:hover { gap: 10px; }
+
+    .article-full-eyebrow {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 10px;
+    }
+
+    .article-full-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 900;
+      line-height: 1.15;
+      margin-bottom: 16px;
+    }
+
+    .article-full-date {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+    }
+
+    .article-full-body {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .article-full-body p {
+      font-family: 'IM Fell English', Georgia, serif;
+      font-size: 1.05rem;
+      line-height: 1.85;
+      color: var(--ink-light);
+      margin-bottom: 1.4em;
+    }
+
+    .article-full-body strong {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--ink);
+      display: block;
+      margin-top: 2em;
+      margin-bottom: 0.4em;
+      border-left: 3px solid var(--red);
+      padding-left: 12px;
+    }
+
+    /* Tabela dialética */
+    .dialectic-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 2.5em 0;
+      font-family: 'Special Elite', monospace;
+      font-size: 0.8rem;
+    }
+
+    .dialectic-table caption {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-style: italic;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+      text-align: left;
+    }
+
+    .dialectic-table th {
+      background: var(--ink);
+      color: var(--cream);
+      padding: 10px 14px;
+      text-align: left;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-size: 0.65rem;
+    }
+
+    .dialectic-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--rule);
+      color: var(--ink-light);
+      line-height: 1.5;
+    }
+
+    .dialectic-table tr:nth-child(even) td { background: var(--parchment); }
+    .dialectic-table tr:first-child th:first-child { border-left: 3px solid var(--red); }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 700px) {
+      .header-top { padding: 10px 20px; }
+      .header-main { padding: 20px 20px 12px; }
+      .header-rules { margin: 10px 20px 0; }
+      nav a { padding: 8px 12px; font-size: 0.6rem; }
+      main { padding: 0 20px 40px; }
+      .article-row { grid-template-columns: 50px 1fr; }
+      .article-arrow { display: none; }
+      .quem-block { grid-template-columns: 1fr; }
+      .quem-left { border-right: none; padding-right: 0; border-bottom: 1px solid var(--rule); padding-bottom: 32px; }
+      .sobre-block { padding: 28px 24px; }
+      footer { padding: 24px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ HEADER ═══════════════════════════════ -->
+<header>
+  <div class="header-top">
+    <span class="header-date" id="headerDate"></span>
+    <span class="header-tagline">— Órgão Independente do Pensamento Crítico —</span>
+    <span>Vol. I</span>
+  </div>
+  <div class="header-main">
+    <div class="header-eyebrow">★ Publicação Comunista Independente ★</div>
+    <h1 class="site-title">A <span>C</span>omuna<br>de Marcelo</h1>
+    <p class="site-subtitle">Crítica · Teoria · Consciência de Classe</p>
+  </div>
+  <div class="header-rules">
+    <div class="rule-thick"></div>
+    <div class="rule-thin"></div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════ NAV ═══════════════════════════════ -->
+<nav>
+  <a href="#" onclick="showFront(); return false;">Início</a>
+  <a href="#manchetes">Publicações</a>
+  <a href="#sobre">Sobre</a>
+  <a href="#quem">Quem Sou</a>
+</nav>
+
+<!-- ═══════════════════════════════ TICKER ═══════════════════════════════ -->
+<div class="ticker-wrap" id="tickerWrap">
+  <div class="ticker-inner">
+    <span class="ticker-label">Manchetes</span>
+    <div class="ticker-slides" id="tickerSlides"></div>
+    <div class="ticker-dots" id="tickerDots"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ FRONT PAGE ═══════════════════════════════ -->
+<main>
+  <div class="front-page" id="frontPage">
+
+    <!-- PUBLICAÇÕES -->
+    <div class="section-header" id="manchetes">
+      <span class="section-label">Publicações</span>
+      <div class="section-rule"></div>
+    </div>
+
+    <div class="articles-grid" id="articlesGrid"></div>
+
+    <!-- SOBRE -->
+    <div class="section-header" id="sobre" style="margin-top: 56px;">
+      <span class="section-label">Sobre a Comuna</span>
+      <div class="section-rule"></div>
+    </div>
+
+    <div class="sobre-block">
+      <p class="sobre-eyebrow">Manifesto Editorial</p>
+      <h2 class="sobre-title">O que é a Comuna de Marcelo?</h2>
+      <p class="sobre-text">
+        A Comuna de Marcelo é um espaço de pensamento livre, crítico e comprometido com a transformação social.
+        Aqui, a análise parte do materialismo histórico — não como dogma, mas como ferramenta. Cada texto é um
+        exercício de consciência de classe: a tentativa de compreender o mundo tal como ele é, para então
+        imaginar o mundo tal como ele poderia ser.
+      </p>
+      <p class="sobre-text" style="margin-top: 14px;">
+        Política, tecnologia, cultura, cotidiano — tudo está atravessado pelas relações de produção. Esta
+        publicação existe para tornar esse atravessamento visível. Não escrevemos para convencer — escrevemos
+        para pensar junto.
+      </p>
+      <p class="sobre-manifesto">
+        "Os filósofos apenas interpretaram o mundo de diferentes maneiras; o que importa é transformá-lo." — Karl Marx, Teses sobre Feuerbach, XI.
+      </p>
+    </div>
+
+    <!-- QUEM SOU EU -->
+    <div class="section-header" id="quem" style="margin-top: 56px;">
+      <span class="section-label">Quem Sou Eu</span>
+      <div class="section-rule"></div>
+    </div>
+
+    <div class="quem-block">
+      <div class="quem-left">
+        <h2 class="quem-name">Marcelo Filho</h2>
+        <p class="quem-idade">23 anos · Lisboa</p>
+        <p class="quem-text">
+          Estudante de Ciências da Computação com foco em Web Design. Acredito que a tecnologia não é neutra — ela é
+          política. E enquanto o capital a usa para aprofundar a exploração, cabe a nós a reconquistar as ferramentas
+          digitais como instrumento de libertação.
+        </p>
+        <p class="quem-text" style="margin-top: 12px;">
+          Fora da computação, dedico o tempo livre ao estudo da Sociologia, à crítica do capitalismo e à reflexão sobre como
+          a tecnologia pode — e deve — servir à luta de classes, e não ao seu contrário.
+        </p>
+        <div class="quem-tags">
+          <span class="quem-tag">Marxismo</span>
+          <span class="quem-tag">Maoismo</span>
+          <span class="quem-tag">Socialismo com características chinesas</span>
+          <span class="quem-tag">Teologia da Libertação</span>
+          <span class="quem-tag">Anti-imperialismo</span>
+          <span class="quem-tag">Anti-capitalismo</span>
+        </div>
+      </div>
+
+      <div class="quem-right">
+        <p class="quem-section-title">Formação Académica</p>
+        <p class="quem-section-content">Ciências da Computação — com ênfase em Web Design e interfaces digitais como espaços de poder e resistência.</p>
+
+        <p class="quem-section-title">Estudos Independentes</p>
+        <p class="quem-section-content">Sociologia crítica e teoria social. Análise e crítica das estruturas do capitalismo contemporâneo. Tecnologia como ferramenta de luta de classes. Filosofia marxista e materialismo histórico-dialético.</p>
+
+        <p class="quem-section-title">Motivação</p>
+        <p class="quem-section-content">
+          Escrevo porque acredito que clareza é um ato político. Em tempos de desinformação industrial, nomear as
+          contradições do sistema é já uma forma de resistência.
+        </p>
+      </div>
+    </div>
+
+  </div><!-- /front-page -->
+
+  <!-- ═══════════════════════════════ ARTICLE PAGE ═══════════════════════════════ -->
+  <div class="article-page" id="articlePage">
+    <div class="article-full-header">
+      <a class="back-link" onclick="showFront()">← Voltar às Publicações</a>
+      <p class="article-full-eyebrow" id="apEyebrow"></p>
+      <h1 class="article-full-title" id="apTitle"></h1>
+      <p class="article-full-date" id="apDate"></p>
+    </div>
+    <div class="article-full-body" id="apBody"></div>
+  </div>
+
+</main>
+
+<!-- ═══════════════════════════════ FOOTER ═══════════════════════════════ -->
+<footer>
+  <div class="footer-rules">
+    <div class="footer-rule-thick"></div>
+    <div class="footer-rule-thin"></div>
+  </div>
+  <p class="footer-slogan">Proletários de todos os países, uni-vos.</p>
+  <p class="footer-contact">
+    Para sugestões ou comentários, escreva para
+    <a href="mailto:srmarcelodzn@gmail.com">srmarcelodzn@gmail.com</a>
+  </p>
+  <p class="footer-credit" style="margin-top: 14px;">
+    © A Comuna de Marcelo · Interface gerada com o auxílio de IA (Claude Sonnet 4.6 · Anthropic)
+  </p>
+</footer>
+
+<script>
+  // ── Data no header ──────────────────────────────────────────────────────────
+  const months = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const now = new Date();
+  document.getElementById('headerDate').textContent =
+    `${now.getDate()} de ${months[now.getMonth()]} de ${now.getFullYear()}`;
+
+  // ── Fetch posts ─────────────────────────────────────────────────────────────
+  let posts = [];
+
+  async function init() {
+    try {
+      const res = await fetch('posts.json');
+      posts = await res.json();
+    } catch(e) {
+      // Fallback inline data (para abrir direto no browser sem servidor)
+      posts = [
+        {
+          id: "001",
+          data: "2026-04-20",
+          manchete: "\"Comunista de iPhone\" faz sentido? A Estética da Abundância e o macOS como Horizonte Tecnológico do Realismo Socialista",
+          resumo: "Existe um senso comum de que a adesão ao socialismo implica renúncia à qualidade. O 'comunista de iPhone' é tido como hipocrisia. Mas será que é? O materialismo histórico responde.",
+          corpo: "**Introdução: O Mito da Escassez Programada**\n\nExiste um senso comum, alimentado tanto por defensores fervorosos do livre mercado quanto por críticos superficiais da esquerda, de que a adesão ao socialismo implica uma renúncia à qualidade estética e funcional. A imagem do \"comunista de iPhone\" é usada como uma tentativa de exposição de hipocrisia, sob a premissa de que o desejo pela excelência tecnológica seria intrinsecamente capitalista.\n\nNo entanto, essa análise ignora a base do materialismo histórico: o valor de uso. Se o objetivo do progresso social é a libertação do trabalhador, tal libertação pressupõe o acesso às ferramentas de produção mais eficientes, duráveis e otimizadas que a humanidade pode produzir. Neste ensaio, propomos que o sistema operacional perfeito para o ideal socialista não é o Linux — com sua exigência de trabalho de manutenção não remunerado — mas o macOS, enquanto a Microsoft representa a fase terminal e parasitária do capital.\n\n**I. O Valor de Uso e a Socialização da Excelência**\n\nComunismo não é sobre \"acabar com a Apple\", mas sobre socializar o padrão Apple. Na lógica socialista, o progresso tecnológico deveria resultar em produtos que \"simplesmente funcionam\", liberando o tempo humano para o lazer e para o desenvolvimento intelectual.\n\nOtimização como Respeito ao Tempo: O macOS oferece uma integração hardware-software que maximiza a vida útil do equipamento e minimiza a fricção do usuário. Para o trabalhador, o tempo gasto configurando drivers ou combatendo atualizações forçadas é tempo de vida roubado.\n\nAs Ferramentas de Produção Já Inclusas: Enquanto o ecossistema Windows isola ferramentas básicas atrás de assinaturas, o macOS entrega nativamente um pacote de produtividade (Pages, Numbers, Keynote) e criatividade (GarageBand, iMovie). É o conceito de uma \"estação de trabalho completa\" disponível no momento em que o hardware é ligado.\n\nQualidade não é Luxo, é Eficiência: Um computador que dura dez anos com alta performance é, inerentemente, menos alienante do que um hardware descartável que exige substituições constantes para alimentar o ciclo de consumo.\n\n**II. A Antítese: O \"Microslop\" e o Capitalismo Rentista**\n\nSe a Apple representa (ainda que sob uma estrutura corporativa) o ápice do design industrial e funcional, a Microsoft hoje exemplifica a entropia capitalista. A crença liberal de que a competição gera inovação constante cai por terra ao observarmos a trajetória do Windows.\n\nO Fenômeno do \"Enshittification\": Termo acadêmico que descreve a degradação deliberada de uma plataforma para extrair mais valor dos usuários.\n\nA Microsoft não busca mais a perfeição técnica, mas a captura de renda:\n\n1. SaaS (Software como Serviço): O Office 365 é a digitalização do senhorio feudal. Você não possui a ferramenta; você paga um aluguel perpétuo pelo direito de escrever um documento.\n\n2. Bloatware e Invasão de IA: O sistema operacional deixou de ser um utilitário para se tornar um painel publicitário. A integração forçada do Copilot e do Edge, contra a vontade do usuário, é a prova de que o consumidor não é mais o cliente, mas o produto cujos dados alimentam modelos de IA.\n\n3. Canibalismo de Estúdios: A estratégia de comprar gigantes dos jogos e fechá-los logo em seguida para garantir lucros trimestrais demonstra que a Microsoft prefere destruir o valor cultural do que permitir que ele exista fora de seu controle monopolista.\n\n**III. Conclusão: O Desktop do Futuro**\n\nO Linux, apesar de nobre em sua filosofia de código aberto, muitas vezes transfere o custo da produção do software para o suporte e manutenção individual — um fardo que o trabalhador comum não deveria carregar.\n\nO \"Sistema Operacional Comunista\" ideal seria aquele que pega a filosofia de design da Apple — foco no usuário, estética limpa, estabilidade absoluta — e a remove das garras da propriedade privada e dos preços proibitivos. No fim das contas, um comunista de verdade não quer que o iPhone deixe de existir; ele quer que a tecnologia de ponta deixe de ser um símbolo de status para se tornar o direito básico de todo criador de valor.\n\nA Microsoft, com seu sistema \"porco\" e extração predatória, não é o ápice do capitalismo, mas o seu sintoma mais decadente: o momento em que o sistema para de criar e começa apenas a cobrar pela sua própria ineficiência.",
+          tabela: {
+            headers: ["Recurso", "Visão Microsoft (Extração)", "Visão macOS (Valor de Uso)"],
+            rows: [
+              ["Atualizações", "Forçadas, para inserir anúncios e telemetria.", "Focadas em segurança e refinamento de UX."],
+              ["Software Office", "Assinatura mensal (Office 365).", "Incluído no sistema como ferramenta de base."],
+              ["Hardware", "Fragmentado; obsolescência rápida para venda de licenças.", "Longevo; otimizado para o máximo de performance/watt."],
+              ["Foco", "O acionista e a coleta de dados.", "A experiência de uso e a produtividade."]
+            ]
+          }
+        },
+        {
+          id: "002",
+          data: "2026-04-20",
+          manchete: "Título Temporário",
+          resumo: "Em breve.",
+          corpo: "Working in progress."
+        }
+      ];
+    }
+    buildTicker();
+    buildGrid();
+  }
+
+  // ── Format date ─────────────────────────────────────────────────────────────
+  function fmtDate(str) {
+    const [y, m, d] = str.split('-');
+    return `${d} de ${months[parseInt(m)-1]} de ${y}`;
+  }
+
+  // ── Ticker ──────────────────────────────────────────────────────────────────
+  let tickerIndex = 0;
+  let tickerTimer;
+
+  function buildTicker() {
+    const slides = document.getElementById('tickerSlides');
+    const dots   = document.getElementById('tickerDots');
+    slides.innerHTML = '';
+    dots.innerHTML = '';
+
+    posts.forEach((p, i) => {
+      const slide = document.createElement('div');
+      slide.className = 'ticker-slide' + (i === 0 ? ' active' : '');
+      slide.innerHTML = `
+        <a href="#" onclick="openArticle(${i}); return false;">${p.manchete}</a>
+        <span class="ticker-date">${fmtDate(p.data)}</span>
+      `;
+      slides.appendChild(slide);
+
+      const dot = document.createElement('div');
+      dot.className = 'ticker-dot' + (i === 0 ? ' active' : '');
+      dot.onclick = () => setTicker(i);
+      dots.appendChild(dot);
+    });
+
+    tickerTimer = setInterval(() => setTicker((tickerIndex + 1) % posts.length), 4000);
+  }
+
+  function setTicker(idx) {
+    document.querySelectorAll('.ticker-slide').forEach((s, i) => {
+      s.classList.toggle('active', i === idx);
+    });
+    document.querySelectorAll('.ticker-dot').forEach((d, i) => {
+      d.classList.toggle('active', i === idx);
+    });
+    tickerIndex = idx;
+  }
+
+  // ── Grid ────────────────────────────────────────────────────────────────────
+  function buildGrid() {
+    const grid = document.getElementById('articlesGrid');
+    grid.innerHTML = '';
+    posts.forEach((p, i) => {
+      const row = document.createElement('a');
+      row.className = 'article-row';
+      row.href = '#';
+      row.onclick = (e) => { e.preventDefault(); openArticle(i); };
+      row.innerHTML = `
+        <div class="article-num">${String(i + 1).padStart(2, '0')}</div>
+        <div class="article-body">
+          <p class="article-date">${fmtDate(p.data)}</p>
+          <h2 class="article-title">${p.manchete}</h2>
+          <p class="article-resumo">${p.resumo}</p>
+        </div>
+        <span class="article-arrow">→</span>
+      `;
+      grid.appendChild(row);
+    });
+  }
+
+  // ── Open Article ────────────────────────────────────────────────────────────
+  function openArticle(idx) {
+    const p = posts[idx];
+    document.getElementById('apEyebrow').textContent = `Publicação Nº ${String(idx+1).padStart(3,'0')}`;
+    document.getElementById('apTitle').textContent = p.manchete;
+    document.getElementById('apDate').textContent = fmtDate(p.data);
+
+    // Build body
+    const bodyEl = document.getElementById('apBody');
+    bodyEl.innerHTML = '';
+
+    const lines = p.corpo.split('\n');
+    let html = '';
+    lines.forEach(line => {
+      const trimmed = line.trim();
+      if (!trimmed) return;
+      if (trimmed.startsWith('**') && trimmed.endsWith('**')) {
+        html += `<strong>${trimmed.slice(2,-2)}</strong>`;
+      } else {
+        html += `<p>${trimmed}</p>`;
+      }
+    });
+    bodyEl.innerHTML = html;
+
+    // Table if exists
+    if (p.tabela) {
+      const tbl = document.createElement('table');
+      tbl.className = 'dialectic-table';
+      tbl.innerHTML = `<caption>Tabela Comparativa de Perspectiva Dialética</caption>`;
+      const thead = document.createElement('thead');
+      const trh = document.createElement('tr');
+      p.tabela.headers.forEach(h => {
+        const th = document.createElement('th');
+        th.textContent = h;
+        trh.appendChild(th);
+      });
+      thead.appendChild(trh);
+      tbl.appendChild(thead);
+      const tbody = document.createElement('tbody');
+      p.tabela.rows.forEach(r => {
+        const tr = document.createElement('tr');
+        r.forEach(cell => {
+          const td = document.createElement('td');
+          td.textContent = cell;
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      tbl.appendChild(tbody);
+      bodyEl.appendChild(tbl);
+    }
+
+    document.getElementById('frontPage').classList.add('hidden');
+    document.getElementById('articlePage').classList.add('visible');
+    window.scrollTo(0, 0);
+  }
+
+  function showFront() {
+    document.getElementById('frontPage').classList.remove('hidden');
+    document.getElementById('articlePage').classList.remove('visible');
+    window.scrollTo(0, 0);
+  }
+
+  init();
+</script>
+</body>
+</html>
