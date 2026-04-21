@@ -671,9 +671,9 @@
 <!-- ═══════════════════════════════ NAV ═══════════════════════════════ -->
 <nav>
   <a href="#" onclick="showFront(); return false;">Início</a>
-  <a href="#manchetes">Publicações</a>
-  <a href="#sobre">Sobre</a>
-  <a href="#quem">Quem Sou</a>
+  <a href="#" onclick="navigateTo('manchetes'); return false;">Publicações</a>
+  <a href="#" onclick="navigateTo('sobre'); return false;">Sobre</a>
+  <a href="#" onclick="navigateTo('quem'); return false;">Quem Sou</a>
 </nav>
 
 <!-- ═══════════════════════════════ TICKER ═══════════════════════════════ -->
@@ -964,6 +964,14 @@
     document.getElementById('frontPage').classList.add('hidden');
     document.getElementById('articlePage').classList.add('visible');
     window.scrollTo(0, 0);
+  }
+
+  function navigateTo(sectionId) {
+    showFront();
+    setTimeout(() => {
+      const el = document.getElementById(sectionId);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }, 50);
   }
 
   function showFront() {
